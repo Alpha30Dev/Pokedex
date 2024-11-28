@@ -37,7 +37,7 @@ async function fetchPokemon(page = 1) {
        displayPokemons(pokemonsForCurrentPage); // affiche les pokemons actuel dans la page
        updatePaginationButtons(allPokemons.length); // mise a jour des boutons de navigation en fonction du nombre total de pokemon
     } catch (error) {
-        displayError("Erreur lost du chargement des pokemons");
+        displayError("Erreur lors du chargement des pokemons");
     }
 }
 
@@ -45,12 +45,24 @@ function displayPokemons(pokemons) {
     pokemonList.innerHTML = '';
     
     pokemons.forEach(pokemon => {
+        console.log(pokemon.apiTypes[0])
         const pokemonCard = document.createElement('div'); //pour chaque pokemon crée une carte (div)
         pokemonCard.classList.add('pokemon-card');
+
+        let pokemonTypes = ''; // pour stocker les types du pokemon
+        pokemon.apiTypes.forEach((pokemonType) => { // parcours les types dans l'api
+            if (pokemonTypes === '') { // ajoute a la chaine
+                pokemonTypes = pokemonType.name; // ajoute le nom du type
+            } else {
+                pokemonTypes += ` ${pokemonType.name}`; // ajoute le nom du 2eme type si y'en a un
+            }
+        });
         
         pokemonCard.innerHTML = `
             <img src="${pokemon.sprite}" alt="${pokemon.name}">
             <h3>${pokemon.name}</h3>
+            <p>${pokemon.id}</p>
+            <p>${pokemonTypes}</p>
             <button class="favorite-btn">❤️</button>
         `;
         
@@ -108,4 +120,9 @@ async function searchPokemon(searchTerm) {
         displayError('Erreur lors de la recherche du pokemon');
     }
 }
+
+
+
+
+
 fetchPokemon();
