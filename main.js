@@ -22,6 +22,7 @@ const searchInput = document.querySelector("#search-input");
 const prevButton = document.querySelector("#prev-button");
 const nextButton = document.querySelector("#next-button");
 let totalPages = 45;
+let favorites = JSON.parse(localStorage.getItem('pokemonFavorites')) || [];
 
 async function fetchPokemon(page = 1) {
     try {
@@ -45,16 +46,19 @@ function displayPokemons(pokemons) {
     pokemonList.innerHTML = '';
     
     pokemons.forEach(pokemon => {
-        console.log(pokemon.apiTypes[0])
-        const pokemonCard = document.createElement('div'); //pour chaque pokemon crée une carte (div)
+        const pokemonCard = document.createElement('div');
         pokemonCard.classList.add('pokemon-card');
 
-        let pokemonTypes = ''; // pour stocker les types du pokemon
-        pokemon.apiTypes.forEach((pokemonType) => { // parcours les types dans l'api
-            if (pokemonTypes === '') { // ajoute a la chaine
-                pokemonTypes = pokemonType.name; // ajoute le nom du type
+        const isFavorite = favorites.includes(pokemon.id);
+        const heartClass = isFavorite ? 'favorite-btn active' : 'favorite-btn';
+        const favoriteText = isFavorite ? '♥' : '♡';
+
+        let pokemonTypes = '';
+        pokemon.apiTypes.forEach((pokemonType) => {
+            if (pokemonTypes === '') {
+                pokemonTypes = pokemonType.name;
             } else {
-                pokemonTypes += ` ${pokemonType.name}`; // ajoute le nom du 2eme type si y'en a un
+                pokemonTypes += ` ${pokemonType.name}`;
             }
         });
         
@@ -63,13 +67,19 @@ function displayPokemons(pokemons) {
             <h3>${pokemon.name}</h3>
             <p>${pokemon.id}</p>
             <p>${pokemonTypes}</p>
-            <button class="favorite-btn">❤️</button>
+            <button class="${heartClass}" data-id="${pokemon.id}">${favoriteText}</button>
         `;
+
         
-        pokemonList.appendChild(pokemonCard); //ajoute chaque carte dans la liste
+        const favoriteBtn = pokemonCard.querySelector('.favorite-btn');
+        favoriteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavorite(pokemon.id, favoriteBtn);
+        });
+        
+        pokemonList.appendChild(pokemonCard);
     });
 }
-
 function displayError(message) {
     pokemonList.innerHTML = `
         <div class="error-message">${message}</div>
@@ -121,8 +131,28 @@ async function searchPokemon(searchTerm) {
     }
 }
 
+function toggleFavorite(pokemonId, button) {
+    const index = favorites.indexOf(pokemonId);
+    
+    if (index === -1) {
+        // Ajouter aux favoris
+        favorites.push(pokemonId);
+        button.textContent = '♥';
+        button.classList.add('active');
+    } else {
+        // Retirer des favoris
+        favorites.splice(index, 1);
+        button.textContent = '♡';
+        button.classList.remove('active');
+    }
+    
+    // Sauvegarder dans localStorage
+    localStorage.setItem('pokemonFavorites', JSON.stringify(favorites));
+}
+
 
 
 
 
 fetchPokemon();
+
